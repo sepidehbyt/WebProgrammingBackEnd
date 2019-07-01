@@ -15,10 +15,6 @@ class CreateAddressTable extends Migration
     {
         Schema::create('address', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('city');
-            $table->string('area');
-            $table->string('address_line');
-            $table->string('restaurant_id');
             $table->timestamps();
         });
     }

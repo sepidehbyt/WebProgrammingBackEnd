@@ -15,11 +15,6 @@ class CreateCommentTable extends Migration
     {
         Schema::create('comment', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('author');
-            $table->unsignedInteger('quality');
-            $table->unsignedInteger('packaging');
-            $table->unsignedInteger('delivery_time');
-            $table->string('text');
             $table->timestamps();
         });
     }
