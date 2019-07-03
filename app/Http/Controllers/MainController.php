@@ -7,8 +7,9 @@ use App\Restaurant;
 use App\Address;
 use App\Category;
 use App\Comment;
-use Illuminate\Support\Facades\DB;
 use App\Food;
+use App\CategoryToRestaurant;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class MainController extends Controller
@@ -23,16 +24,60 @@ class MainController extends Controller
         $area = $request->area;
         $city = $request->city;
         $category = $request->category;
-        $category_arr = explode(',', $category);
-        $addressIds = Address::where('area','=',$area)->where('city','=',$city)->select('id')->get();
-
-        $restaurants = Restaurant::whereIn('address_id',$addressIds)->get();
+        if($area <> null) {
+            $addressIds = Address::where('area','=',$area)->where('city','=',$city)->select('id')->get();
+        }
+        else {
+            $addressIds = Address::where('city','=',$city)->select('id')->get();
+        }
+        if($category <> null) {
+            $category_arr = explode(',', $category);
+            $categoryIds = Category::whereIn('name',$category_arr)->select('id')->get();
+        }
+        else {
+            $categoryIds = Category::select('id')->get();
+        }
+        $restaurantIds = CategoryToRestaurant::whereIn('category_id', $categoryIds)->select('restaurant_id')->get();
+        $allRestaurants = Restaurant::whereIn('address_id',$addressIds)->whereIn('id',$restaurantIds)->get();
+        $hour=(int)(date("H"));
+        $openRestaurants = [];
+        $closeRestaurants = [];
+        foreach($allRestaurants as $restaurant) {
+            if($restaurant->opening_time <= $hour and $restaurant->closing_time >= $hour) {
+                array_push($openRestaurants, $restaurant);
+            }
+            else {
+                array_push($closeRestaurants, $restaurant);
+            }
+        }
         return (response()->json([
             'area'=> $area,
             'city'=>$city,
-            'categories'=>$category_arr,
             'addressId'=>$addressIds,
-            'restaurants'=>$restaurants
+            'categoryIds'=>$categoryIds,
+            'restaurantIds'=>$restaurantIds,
+            'allRestaurantsSize'=>sizeof($allRestaurants),
+            'allRestaurants'=>$allRestaurants,
+            'openRestaurants'=>$openRestaurants,
+            'closeRestaurants'=>$closeRestaurants,
+            'hour'=>$hour
+            ]));
+    }
+
+    public function getrestaurantdata($id){
+
+        return (response()->json([
+            'chiz'=>$id
+            // 'area'=> $area,
+            // 'city'=>$city,
+            // 'addressId'=>$addressIds,
+            // 'categoryIds'=>$categoryIds,
+            // 'restaurantIds'=>$restaurantIds,
+            // 'allRestaurantsSize'=>sizeof($allRestaurants),
+            // 'allRestaurants'=>$allRestaurants,
+            // 'openRestaurants'=>$openRestaurants,
+            // 'closeRestaurants'=>$closeRestaurants,
+            // 'hour'=>$hour
             ]));
     }
 
