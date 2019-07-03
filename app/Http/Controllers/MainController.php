@@ -38,30 +38,91 @@ class MainController extends Controller
         else {
             $categoryIds = Category::select('id')->get();
         }
+        $categories = Category::get();
         $restaurantIds = CategoryToRestaurant::whereIn('category_id', $categoryIds)->select('restaurant_id')->get();
         $allRestaurants = Restaurant::whereIn('address_id',$addressIds)->whereIn('id',$restaurantIds)->get();
         $hour=(int)(date("H"));
-        $openRestaurants = [];
-        $closeRestaurants = [];
-        foreach($allRestaurants as $restaurant) {
-            if($restaurant->opening_time <= $hour and $restaurant->closing_time >= $hour) {
-                array_push($openRestaurants, $restaurant);
+
+        $openRestaurants = Restaurant::whereIn('restaurant.address_id',$addressIds)->whereIn('restaurant.id',$restaurantIds)
+        ->where('restaurant.opening_time','<=',$hour)->where('restaurant.closing_time','>=',$hour)
+        ->join('address', 'restaurant.address_id', '=', 'address.id')
+        ->select(DB::raw('restaurant.opening_time as opening_time,restaurant.id as id, restaurant.name as name, restaurant.logo as logo,
+                restaurant.average_rate as average_rate, address.address_line as address_line'))
+        ->get();
+        $closeRestaurants = Restaurant::whereIn('restaurant.address_id',$addressIds)->whereIn('restaurant.id',$restaurantIds)
+        ->where('restaurant.opening_time','>',$hour)->orWhere('restaurant.closing_time','<',$hour)
+        ->select(DB::raw('restaurant.opening_time as opening_time,restaurant.id as id, restaurant.name as name, restaurant.logo as logo,
+                restaurant.average_rate as average_rate, address.address_line as address_line'))
+        ->join('address', 'restaurant.address_id', '=', 'address.id')->get();
+
+        $finalOpenRestaurants = [];
+        foreach($openRestaurants as $restaurant) {
+            $catIds = CategoryToRestaurant::where('restaurant_id','=',$restaurant->id)->select('category_id')->get();
+            $cats = Category::whereIn('id',$catIds)->select('name')->get();
+            $catString = "";
+            $counter = 0;
+            $size = sizeOf($cats);
+            foreach($cats as $cat) {
+                $counter ++;
+                if($counter <> $size) {
+                    $catString = $catString . $cat->name . ' • ';
+                }
             }
-            else {
-                array_push($closeRestaurants, $restaurant);
+            if($size > 0) {
+                $catString = $catString . $cats[$size - 1]->name;
             }
+            array_push($finalOpenRestaurants,[
+                'id'=>$restaurant->id,
+                'name'=>$restaurant->name,
+                'logo'=>$restaurant->logo,
+                'average_rate'=>$restaurant->average_rate,
+                'address'=>$restaurant->address_line,
+                'opening_time'=>$restaurant->opening_time,
+                'categories'=>$catString
+            ]);
         }
+
+        $finalCloseRestaurants = [];
+        foreach($closeRestaurants as $restaurant) {
+            $catIds = CategoryToRestaurant::where('restaurant_id','=',$restaurant->id)->select('category_id')->get();
+            $cats = Category::whereIn('id',$catIds)->select('name')->get();
+            $catString = "";
+            $counter = 0;
+            $size = sizeOf($cats);
+            foreach($cats as $cat) {
+                $counter ++;
+                if($counter <> $size) {
+                    $catString = $catString . $cat->name . ' • ';
+                }
+            }
+            if($size > 0) {
+                $catString = $catString . $cats[$size - 1]->name;
+            }
+            array_push($finalCloseRestaurants,[
+                'id'=>$restaurant->id,
+                'name'=>$restaurant->name,
+                'logo'=>$restaurant->logo,
+                'average_rate'=>$restaurant->average_rate,
+                'address'=>$restaurant->address_line,
+                'opening_time'=>$restaurant->opening_time,
+                'categories'=>$catString
+            ]);
+        }
+
         return (response()->json([
             'area'=> $area,
             'city'=>$city,
-            'addressId'=>$addressIds,
+            // 'addressId'=>$addressIds,
             'categoryIds'=>$categoryIds,
-            'restaurantIds'=>$restaurantIds,
+            'categories'=>$categories,
+            // 'restaurantIds'=>$restaurantIds,
             'allRestaurantsSize'=>sizeof($allRestaurants),
-            'allRestaurants'=>$allRestaurants,
-            'openRestaurants'=>$openRestaurants,
-            'closeRestaurants'=>$closeRestaurants,
-            'hour'=>$hour
+            // 'allRestaurants'=>$allRestaurants,
+            // 'openRestaurants'=>$openRestaurants,
+            'openRestaurants'=>$finalOpenRestaurants,
+            'closeRestaurants'=>$finalCloseRestaurants,
+            // 'closeRestaurants'=>$closeRestaurants,
+            'hour'=>$hour,
             ]));
     }
 
