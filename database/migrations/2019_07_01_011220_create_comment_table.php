@@ -19,6 +19,7 @@ class CreateCommentTable extends Migration
             $table->unsignedInteger('quality');
             $table->unsignedInteger('packaging');
             $table->unsignedInteger('delivery_time');
+            $table->unsignedInteger('delivery_react');
             $table->unsignedInteger('restaurant_id');
             $table->string('text');
             $table->timestamps();

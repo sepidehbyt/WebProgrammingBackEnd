@@ -11,6 +11,7 @@ use App\Food;
 use App\CategoryToRestaurant;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class MainController extends Controller
 {
@@ -65,81 +66,55 @@ class MainController extends Controller
     }
 
     public function getrestaurantdata($id){
+        $restaurant = Restaurant::where('id','=',$id)->get();
+        $address = Address::where('id','=',$restaurant[0]->address_id)->get();
+        $foodSets = Food::where('restaurant_id','=',$id)->groupBy('food_set')->select('food_set')->get();
+        $foods = [];
+        foreach($foodSets as $foodSet) {
+            $temp = Food::where('restaurant_id','=',$id)->where('food_set','=',$foodSet->food_set)->get();
+            array_push($foods, ['foodSet' => $foodSet, 'foods' => $temp]);
+        }
+        $comments = Comment::where('restaurant_id','=',$id)->orderBy('created_at', 'desc')->get();
+        $averageRate = 0;
+        foreach($comments as $comment) {
+            $temp = $comment->quality + $comment->packaging + $comment->delivery_time + $comment->delivery_react;
+            $temp/=4;
+            $averageRate += $temp;
+        }
+        $averageRate /= sizeof($comments);
 
         return (response()->json([
-            'chiz'=>$id
-            // 'area'=> $area,
-            // 'city'=>$city,
-            // 'addressId'=>$addressIds,
-            // 'categoryIds'=>$categoryIds,
-            // 'restaurantIds'=>$restaurantIds,
-            // 'allRestaurantsSize'=>sizeof($allRestaurants),
-            // 'allRestaurants'=>$allRestaurants,
-            // 'openRestaurants'=>$openRestaurants,
-            // 'closeRestaurants'=>$closeRestaurants,
-            // 'hour'=>$hour
+            'restaurant'=>$restaurant,
+            'address'=>$address,
+            'foodSets'=>$foodSets,
+            'foods'=>$foods,
+            'comments'=>$comments,
+            'averageRate'=>$averageRate,
             ]));
     }
 
+    public function getcomments($id){
+        $comments = Comment::where('restaurant_id','=',$id)->orderBy('created_at', 'desc')->get();
+        return (response()->json([
+            'comments'=>$comments,
+            ]));
+    }
 
-    // public function checkurl(Request $request){
-    //     $groups = Groups::get();
-    //     $temp = false;
-    //     foreach($groups as $tmp){
-    //         if($tmp->activate == "true"){
-    //             $temp = URLs::where('group_id','=',$tmp->id)->where('url','=',$request->url)->exists();
-    //             if($temp == true){
-    //                 return 'true';
-    //             }
-    //         }
-    //     }
-    //     return 'false';
-    // }
+    public function postcomment($id, Request $request){
+        $comment = new Comment([
+            'author' => $request->author,
+            'quality' => $request->quality,
+            'packaging' => $request->packaging,
+            'delivery_time' => $request->delivery_time,
+            'delivery_react' => $request->delivery_react,
+            'restaurant_id' => $id,
+            'text' => $request->text,
+            'created_at' => Carbon::now()
+        ]);
+        $comment->save();
+        return response()->json([
+            'message' => '#successCommentSave'
+        ], 200);
+    }
 
-    // public function addGroup(Request $request)
-    // {
-	// 	$group = new Groups();
-    //     $group->activate = 'false';
-    //     $group->save();
-	// 	return response($group->id, 200);
-    // }
-
-    // public function addurl(Request $request)
-    // {
-	// 	$url = new URLs();
-    //     $url->url = $request->url;
-    //     $url->group_id = $request->group_id;
-    //     $url->save();
-	// 	return response($url->id, 200);
-    // }
-
-    // public function removeurl(Request $request){
-    //     $url = URLs::where('id','=',$request->id)->delete();
-    //     return response('removed.',200);
-    // }
-
-    // public function activate(Request $request){
-    //     $group = Groups::where('id','=',$request->id)->first();
-    //     $group->activate='true';
-    //     $group->save();
-    //     return response('done');
-    // }
-
-    // public function deactivate(Request $request){
-    //     $group = Groups::where('id','=',$request->id)->first();
-    //     $group->activate='false';
-    //     $group->save();
-    //     return response('done');
-    // }
-
-    // public function getdata(Request $request){
-    //     $arr = [];
-    //     $groups = Groups::get();
-    //     foreach($groups as $tmp){
-    //         $temp = URLs::select('id','url')->where('group_id','=',$tmp->id)->get();
-    //         array_push($arr,['group_id'=>$tmp->id,'activate'=>$tmp->activate,'urls'=>$temp]);
-    //     }
-    //     return response($arr);
-
-    // }
 }

@@ -19,7 +19,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::post('getarea','MainController@getarea');
 Route::post('restaurants','MainController@getrestaurants');
 Route::get('restaurants/{id}','MainController@getrestaurantdata');
-// Route::post('addurl','MainController@addurl');
+Route::get('restaurants/{id}/comments','MainController@getcomments');
+Route::post('restaurants/{id}/comments','MainController@postcomment');
 // Route::post('removeurl','MainController@removeurl');
 // Route::post('activate','MainController@activate');
 // Route::post('deactivate','MainController@deactivate');
