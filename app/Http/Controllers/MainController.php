@@ -117,7 +117,7 @@ class MainController extends Controller
             'categories'=>$categories,
             // 'restaurantIds'=>$restaurantIds,
             'allRestaurantsSize'=>sizeof($allRestaurants),
-            // 'allRestaurants'=>$allRestaurants,
+            'allRestaurants'=>$allRestaurants,
             // 'openRestaurants'=>$openRestaurants,
             'openRestaurants'=>$finalOpenRestaurants,
             'closeRestaurants'=>$finalCloseRestaurants,
