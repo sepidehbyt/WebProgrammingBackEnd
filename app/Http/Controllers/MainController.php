@@ -15,15 +15,25 @@ class MainController extends Controller
 {
 
     public function getarea(Request $request){
-        $arr = [];
-        $address = Address::get();
+        $address = Address::where('city','=',$request->city)->select('area')->get();
+        return (response()->json($address));
+    }
+
+    public function getrestaurants(Request $request){
+        $area = $request->area;
         $city = $request->city;
-        foreach($address as $add){
-            if($add->city == $city){
-                array_push($arr,$add->area);
-            }
-        }
-        return response($arr);
+        $category = $request->category;
+        $category_arr = explode(',', $category);
+        $addressIds = Address::where('area','=',$area)->where('city','=',$city)->select('id')->get();
+
+        $restaurants = Restaurant::whereIn('address_id',$addressIds)->get();
+        return (response()->json([
+            'area'=> $area,
+            'city'=>$city,
+            'categories'=>$category_arr,
+            'addressId'=>$addressIds,
+            'restaurants'=>$restaurants
+            ]));
     }
 
 

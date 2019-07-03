@@ -13,7 +13,7 @@ class Food extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'price', 'description', 'food_set', 'id', 'created_at','updated_at'
+        'name', 'price', 'description', 'food_set', 'restaurant_id', 'id', 'created_at','updated_at'
     ];
 
     public function getFoods()

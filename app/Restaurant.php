@@ -21,11 +21,6 @@ class Restaurant extends Model
         return $this->hasMany('App\Comment');
     }
 
-    public function getCategories()
-    {
-        return $this->hasMany('App\Category');
-    }
-
     public function getFoods()
     {
         return $this->hasMany('App\Food');

@@ -16,8 +16,4 @@ class Category extends Model
         'name', 'id', 'created_at','updated_at'
     ];
 
-    public function getCategories()
-    {
-        return $this->belongsTo('App\Restaurant');
-    }
 }

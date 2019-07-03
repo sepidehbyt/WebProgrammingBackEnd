@@ -16,8 +16,8 @@ use Illuminate\Http\Request;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
-Route::get('getarea','MainController@getarea');
-// Route::post('checkurl','MainController@checkurl');
+Route::post('getarea','MainController@getarea');
+Route::post('getrestaurants','MainController@getrestaurants');
 // Route::post('addGroup','MainController@addGroup');
 // Route::post('addurl','MainController@addurl');
 // Route::post('removeurl','MainController@removeurl');
