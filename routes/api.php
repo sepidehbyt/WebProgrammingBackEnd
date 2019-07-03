@@ -21,6 +21,7 @@ Route::post('restaurants','MainController@getrestaurants');
 Route::get('restaurants/{id}','MainController@getrestaurantdata');
 Route::get('restaurants/{id}/comments','MainController@getcomments');
 Route::post('restaurants/{id}/comments','MainController@postcomment');
+Route::post('restaurants/add','MainController@addrestaurants');
 // Route::post('removeurl','MainController@removeurl');
 // Route::post('activate','MainController@activate');
 // Route::post('deactivate','MainController@deactivate');

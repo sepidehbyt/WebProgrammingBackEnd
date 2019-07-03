@@ -117,4 +117,54 @@ class MainController extends Controller
         ], 200);
     }
 
+    public function addrestaurants(Request $request){
+        $request = json_decode($request->getContent());
+        $address = $request->address;
+        $tempAddress = new Address([
+            'city' => $address->city,
+            'area' => $address->area,
+            'address_line' => $address->address_line,
+            'created_at' => Carbon::now()
+        ]);
+        $tempAddress->save();
+
+        $restaurant = new Restaurant([
+            'name' => $request->name,
+            'logo' => $request->logo,
+            'opening_time' => $request->opening_time,
+            'closing_time' => $request->closing_time,
+            'average_rate' => $request->average_rate,
+            'address_id' => $tempAddress->id,
+        ]);
+        $restaurant->save();
+
+        $categories = $request->categories;
+        foreach($categories as $category) {
+            $categoryId = Category::where('name','=',$category->name)->select('id')->first();
+            if($categoryId <> null) {
+                $categoryToRestaurant = new CategoryToRestaurant([
+                    'restaurant_id' => $restaurant->id,
+                    'category_id' => $categoryId->id
+                ]);
+                $categoryToRestaurant->save();
+            }
+        }
+
+        $foods = $request->foods;
+        foreach($foods as $food) {
+            $tempFood = new Food([
+                "name" => $food->name,
+                "price" => $food->price,
+                "description" => $food->description,
+                "food_set" => $food->food_set,
+                "restaurant_id" => $restaurant->id
+            ]);
+            $tempFood->save();
+        }
+
+        return response()->json([
+            'message' => '#successRestaurantSave'
+        ], 200);
+    }
+
 }
