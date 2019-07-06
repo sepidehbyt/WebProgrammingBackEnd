@@ -136,6 +136,7 @@ class MainController extends Controller
             array_push($foods, ['foodSet' => $foodSet, 'foods' => $temp]);
         }
         $comments = Comment::where('restaurant_id','=',$id)->orderBy('created_at', 'desc')->get();
+        $comments2 = Comment::where('restaurant_id','=',$id)->orderBy('created_at', 'desc')->first();
         $averageRate = 0;
         foreach($comments as $comment) {
             $temp = $comment->quality + $comment->packaging + $comment->delivery_time + $comment->delivery_react;
@@ -146,6 +147,7 @@ class MainController extends Controller
 
         return (response()->json([
             'restaurant'=>$restaurant,
+            'rates'=>[$comments2],
             'address'=>$address,
             'foodSets'=>$foodSets,
             'foods'=>$foods,
